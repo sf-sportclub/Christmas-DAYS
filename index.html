@@ -318,6 +318,49 @@
         display: none !important;
       }
     }
+
+    /* === Suggestion list สำหรับรหัสพนักงาน (แทน datalist) === */
+    .empid-wrap {
+      position: relative;
+    }
+    #empIdSuggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin-top: 2px;
+      background: rgba(15,23,42,0.98);
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.8);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 30;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+    .suggest-list {
+      padding: 4px 0;
+    }
+    .suggest-item {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .suggest-item:hover {
+      background: rgba(55,65,81,0.9);
+    }
+    .suggest-item strong {
+      font-weight: 700;
+      color: #facc15;
+    }
+    .suggest-empty {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
   </style>
 </head>
 <body>
@@ -333,8 +376,10 @@
     </div>
 
     <label for="empId">รหัสพนักงาน</label>
-    <input type="text" id="empId" list="empIdList" placeholder="เช่น 1000000001" autocomplete="off">
-    <datalist id="empIdList"></datalist>
+    <div class="empid-wrap">
+      <input type="text" id="empId" placeholder="เช่น 1000000001 หรือพิมพ์ 5 ตัวท้าย" autocomplete="off">
+      <div id="empIdSuggestions" class="hidden"></div>
+    </div>
 
     <div class="btn-row">
       <button type="button" class="btn-secondary" onclick="triggerEmpLookup()">
@@ -460,11 +505,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
-    // URL Web App ของ Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxJtFq2AsruKcOCQQrEqfLBGpYlXOiRGdMRIlisDWPfszT92hv7KediWaX6g7sdgp5c/exec';
+    // URL Web App ของ Apps Script (ตัวเดิม)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxRTc4Ra2v4UFOfr-ZvrDxUvQMVBvBcWj9J5QZlHAtbpGNYSPbn7x3EeJdtg0QZ41wT/exec';
 
     var empMap = {};            // key = empId
+    var empIndex = [];          // สำหรับค้นหา/แนะนำ (debounce)
     var lastSavedRecord = null; // เก็บ record ล่าสุดที่บันทึกสำเร็จ
+
+    // debounce helper
+    function debounce(fn, delay) {
+      var t = null;
+      return function() {
+        var ctx = this, args = arguments;
+        clearTimeout(t);
+        t = setTimeout(function() {
+          fn.apply(ctx, args);
+        }, delay);
+      };
+    }
 
     async function apiGetEmployees() {
       const res = await fetch(API_URL + '?action=getEmployees', { cache: 'no-store' });
@@ -536,23 +594,125 @@
       lastSavedRecord = null;
     }
 
-    function handleEmpIdInput() {
+    // สร้าง index สำหรับค้นหา: ใช้รหัสเต็ม + ตัวหน้า + 5 ตัวท้าย + ชื่อ
+    function buildEmpIndex(list) {
+      empIndex = [];
+      (list || []).forEach(function(r) {
+        if (!r.empId) return;
+        var id = String(r.empId);
+        var fullName = r.fullName || ((r.firstName || '') + ' ' + (r.lastName || '')).trim();
+        var firstChar = id.charAt(0) || '';
+        var last5 = id.slice(-5);
+        var label = (id + ' ' + fullName).trim();
+        var key = (id + ' ' + firstChar + ' ' + last5 + ' ' + fullName).toLowerCase();
+        empIndex.push({
+          empId: id,
+          fullName: fullName,
+          label: label,
+          key: key
+        });
+      });
+    }
+
+    function renderEmpSuggestions(query) {
+      var panel = document.getElementById('empIdSuggestions');
+      panel.innerHTML = '';
+      panel.classList.add('hidden');
+
+      var q = (query || '').trim();
+      if (!q) return;
+
+      var lower = q.toLowerCase();
+      var results = [];
+      var MAX_RESULTS = 20;
+
+      for (var i = 0; i < empIndex.length; i++) {
+        var item = empIndex[i];
+        if (item.key.indexOf(lower) !== -1) {
+          results.push(item);
+          if (results.length >= MAX_RESULTS) break;
+        }
+      }
+
+      if (!results.length) {
+        var empty = document.createElement('div');
+        empty.className = 'suggest-empty';
+        empty.textContent = 'ไม่พบรหัสที่ใกล้เคียง';
+        panel.appendChild(empty);
+        panel.classList.remove('hidden');
+        return;
+      }
+
+      var container = document.createElement('div');
+      container.className = 'suggest-list';
+
+      results.forEach(function(item) {
+        var row = document.createElement('div');
+        row.className = 'suggest-item';
+        row.dataset.empId = item.empId;
+
+        // เน้นรหัส
+        var strong = document.createElement('strong');
+        strong.textContent = item.empId;
+        row.appendChild(strong);
+
+        if (item.fullName) {
+          var spanName = document.createElement('span');
+          spanName.textContent = ' • ' + item.fullName;
+          row.appendChild(spanName);
+        }
+
+        row.addEventListener('click', function() {
+          selectEmpIdFromSuggestion(this.dataset.empId);
+        });
+
+        container.appendChild(row);
+      });
+
+      panel.appendChild(container);
+      panel.classList.remove('hidden');
+    }
+
+    function hideEmpSuggestions() {
+      var panel = document.getElementById('empIdSuggestions');
+      panel.innerHTML = '';
+      panel.classList.add('hidden');
+    }
+
+    function selectEmpIdFromSuggestion(empId) {
+      var input = document.getElementById('empId');
+      input.value = empId;
+      hideEmpSuggestions();
+
+      var rec = empMap[empId];
+      if (rec) {
+        fillFormFromRecord(rec);
+        lastSavedRecord = rec;
+      } else {
+        clearFormForNew(empId);
+      }
+    }
+
+    // ใช้ตอนกดปุ่ม 🔍 หรือ Enter → เช็คแบบ exact match
+    function lookupExactEmpId() {
       var v = document.getElementById('empId').value.trim();
       if (!v) {
         clearFormForNew('');
+        hideEmpSuggestions();
         return;
       }
       var rec = empMap[v];
       if (rec) {
         fillFormFromRecord(rec);
         lastSavedRecord = rec;
+        hideEmpSuggestions();
       } else {
         clearFormForNew(v);
       }
     }
 
     function triggerEmpLookup() {
-      handleEmpIdInput();
+      lookupExactEmpId();
     }
 
     async function initEmpIds() {
@@ -562,21 +722,14 @@
         const list = await apiGetEmployees();
 
         empMap = {};
-        var dl = document.getElementById('empIdList');
-        dl.innerHTML = '';
-
         (list || []).forEach(function(r) {
           if (!r.empId) return;
           empMap[r.empId] = r;
-
-          var opt = document.createElement('option');
-          var label = (r.empId + ' ' + (r.fullName || ((r.firstName || '') + ' ' + (r.lastName || '')))).trim();
-          opt.value = r.empId;
-          opt.label = label;
-          dl.appendChild(opt);
         });
 
-        setMsg('msgEmp', 'พิมพ์รหัสพนักงานเพื่อเลือกจากรายการที่มีอยู่ หรือกรอกรหัสใหม่ได้เลย', 'info');
+        buildEmpIndex(list);
+
+        setMsg('msgEmp', 'พิมพ์รหัสพนักงาน (เลขเต็ม หรือตัวหน้า + 5 ตัวท้าย) เพื่อเลือกจากรายการที่มีอยู่ หรือกรอกรหัสใหม่ได้เลย', 'info');
       } catch (err) {
         console.error(err);
         setMsg('msgEmp', 'โหลดรายชื่อรหัสพนักงานไม่สำเร็จ: ' + err.message, 'error');
@@ -644,7 +797,6 @@
         lastName: lastName,
         department: department,
         luckyNumber: lucky
-        // GAME/ICE จะไม่ส่งจากหน้าเว็บแล้ว ปล่อยให้ Excel หลังบ้านจัดการ
       };
 
       try {
@@ -657,6 +809,9 @@
         var record = res.record || {};
         empMap[record.empId] = record;
         lastSavedRecord = record;
+
+        // rebuild index อัปเดต label ให้ตรง
+        buildEmpIndex(Object.values(empMap));
 
         return { record: record, existedBefore: existedBefore };
       } catch (err) {
@@ -754,14 +909,40 @@
       window.print();
     }
 
-    document.getElementById('empId').addEventListener('input', handleEmpIdInput);
+    // ==== Events ====
+    var handleEmpIdInputDebounced = debounce(function() {
+      var v = document.getElementById('empId').value;
+      renderEmpSuggestions(v);
+
+      // ถ้าพิมพ์ตรงกับรหัสที่มีอยู่ → เติมฟอร์มทันที
+      var trimmed = v.trim();
+      if (trimmed && empMap[trimmed]) {
+        fillFormFromRecord(empMap[trimmed]);
+        lastSavedRecord = empMap[trimmed];
+      }
+      // ไม่ clear ฟอร์มตอนพิมพ์บางส่วน เพื่อลื่น ๆ
+    }, 180);
+
+    document.getElementById('empId').addEventListener('input', handleEmpIdInputDebounced);
+
     document.getElementById('empId').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         triggerEmpLookup();
+      } else if (e.key === 'Escape') {
+        hideEmpSuggestions();
       }
     });
 
+    // คลิกนอกกล่อง → ซ่อน suggestion
+    document.addEventListener('click', function(e) {
+      var wrap = document.querySelector('.empid-wrap');
+      if (!wrap.contains(e.target)) {
+        hideEmpSuggestions();
+      }
+    });
+
+    // init ตอนโหลด
     initEmpIds();
   </script>
 </body>
