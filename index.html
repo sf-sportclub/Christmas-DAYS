@@ -49,7 +49,7 @@
       padding: 8px 10px;
       border-radius: 8px;
       border: 1px solid #4b5563;
-      font-size: 16px; /* ปรับเป็น 16px กันมือถือซูม */
+      font-size: 16px; /* กันมือถือซูม */
       margin-bottom: 10px;
       background: rgba(15,23,42,0.9);
       color: #f9fafb;
@@ -78,7 +78,7 @@
       border: none;
       border-radius: 999px;
       padding: 8px 14px;
-      font-size: 16px; /* ปรับเป็น 16px ด้วย */
+      font-size: 16px; /* กันมือถือซูม */
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -226,6 +226,12 @@
       text-align: center;
     }
 
+    .ticket-print-btn {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
     .hidden { display: none; }
 
     .footer-tip {
@@ -286,6 +292,9 @@
       .ticket {
         box-shadow: none;
       }
+      .ticket-print-btn {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -332,7 +341,7 @@
 
     <label for="luckyNumber">
       เลขสุ่ม
-      <span class="badge">ใช้สำหรับจับรางวัลวันคริสต์มาส</span>
+      <span class="badge">ใช้สำหรับจับรางวัลวันคริสต์มาส (0000–0399)</span>
     </label>
     <input type="text" id="luckyNumber" readonly placeholder="กดปุ่ม &quot;สุ่มเลข&quot;">
     <div class="btn-row">
@@ -364,9 +373,18 @@
       <span id="msgIce" class="msg" style="margin:0;"></span>
     </div>
 
-    <button type="button" class="btn-primary btn-full" onclick="saveAndShowTicket()">
-      ✅ บันทึก & แสดงคูปองสุ่มเลข
-    </button>
+    <!-- ปุ่มบันทึกเฉพาะข้อมูล -->
+    <div class="btn-row">
+      <button type="button" class="btn-secondary btn-full" onclick="saveOnly()">
+        💾 บันทึกข้อมูลลงระบบ
+      </button>
+    </div>
+    <!-- ปุ่มแสดงคูปอง (ต้องบันทึกก่อน) -->
+    <div class="btn-row">
+      <button type="button" class="btn-primary btn-full" onclick="showTicket()">
+        🎟️ แสดงคูปองจากข้อมูลล่าสุด
+      </button>
+    </div>
     <div id="msgSave" class="msg"></div>
   </div>
 
@@ -397,23 +415,32 @@
         </div>
 
         <div class="ticket-hint">
-          * แนะนำให้ถ่ายรูปหน้าจอเก็บคูปองนี้ไว้<br>เพื่อนำไปใช้ยืนยันสิทธิ์ในวันงานเทศกาลคริสต์มาส
+          * แนะนำให้ถ่ายรูปหน้าจอ หรือบันทึก/พิมพ์คูปองนี้เก็บไว้<br>เพื่อนำไปใช้ยืนยันสิทธิ์ในวันงานเทศกาลคริสต์มาส
         </div>
       </div>
+    </div>
+
+    <!-- ปุ่มบันทึกคูปอง (ใช้ window.print) -->
+    <div class="ticket-print-btn">
+      <button type="button" class="btn-outline" onclick="printTicket()">
+        🖨️ บันทึก / พิมพ์คูปอง
+      </button>
     </div>
   </div>
 
   <div class="footer-tip">
-    เปิดจากมือถือสามารถถ่ายรูปหน้าจอเก็บคูปองได้เลย 🎅
+    เปิดจากมือถือสามารถถ่ายรูปหน้าจอ หรือกด “บันทึก / พิมพ์คูปอง” เพื่อเก็บคูปองได้เลย 🎅
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxRTc4Ra2v4UFOfr-ZvrDxUvQMVBvBcWj9J5QZlHAtbpGNYSPbn7x3EeJdtg0QZ41wT/exec';
+    // URL Web App ของ Apps Script
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxEYCCpkF0tsDXieAcpsLhAIEQvFEZyWBNJB-HBjJV-p9LS-rhA4jAhzNMrWxx1fETb/exec';
 
-    var empMap = {}; // key = empId
+    var empMap = {};            // key = empId
+    var lastSavedRecord = null; // เก็บ record ล่าสุดที่บันทึกสำเร็จ
 
     async function apiGetEmployees() {
-      const res = await fetch(API_URL + '?action=getEmployees');
+      const res = await fetch(API_URL + '?action=getEmployees', { cache: 'no-store' });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'API error');
       return (json.result && json.result.employees) || [];
@@ -421,7 +448,7 @@
 
     async function apiGetLucky(empId) {
       const url = API_URL + '?action=getLuckyNumber&empId=' + encodeURIComponent(empId);
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'API error');
       return json.result;
@@ -519,6 +546,7 @@
         setMsg('msgEmp', '', '');
       }
       setMsg('msgLucky', '', '');
+      lastSavedRecord = null;
     }
 
     function handleEmpIdInput() {
@@ -530,6 +558,7 @@
       var rec = empMap[v];
       if (rec) {
         fillFormFromRecord(rec);
+        lastSavedRecord = rec;
       } else {
         clearFormForNew(v);
       }
@@ -588,7 +617,7 @@
         document.getElementById('luckyNumber').value = res.luckyNumber || '';
 
         if (res.isNew) {
-          setMsg('msgLucky', 'สุ่มเลขใหม่ให้แล้ว โปรดกดบันทึกเพื่อเก็บลงระบบ', 'info');
+          setMsg('msgLucky', 'สุ่มเลขใหม่ให้แล้ว โปรดกด "บันทึกข้อมูลลงระบบ"', 'info');
         } else {
           setMsg('msgLucky', 'รหัสนี้มีเลขสุ่มอยู่แล้ว แสดงเลขเดิมให้เรียบร้อย', 'info');
         }
@@ -603,7 +632,8 @@
       }
     }
 
-    async function saveAndShowTicket() {
+    // core สำหรับบันทึกข้อมูล
+    async function saveCore() {
       var empId      = document.getElementById('empId').value.trim();
       var firstName  = document.getElementById('firstName').value.trim();
       var lastName   = document.getElementById('lastName').value.trim();
@@ -612,11 +642,11 @@
       var gameChecked = document.getElementById('chkGame').checked;
       var iceChecked  = document.getElementById('chkIce').checked;
 
-      if (!empId)      { alert('กรุณากรอกรหัสพนักงาน'); return; }
-      if (!firstName)  { alert('กรุณากรอกชื่อ'); return; }
-      if (!lastName)   { alert('กรุณากรอกนามสกุล'); return; }
-      if (!department) { alert('กรุณากรอกฝ่าย/แผนก'); return; }
-      if (!lucky)      { alert('กรุณากดสุ่มเลขก่อนบันทึก'); return; }
+      if (!empId)      { alert('กรุณากรอกรหัสพนักงาน'); return null; }
+      if (!firstName)  { alert('กรุณากรอกชื่อ'); return null; }
+      if (!lastName)   { alert('กรุณากรอกนามสกุล'); return null; }
+      if (!department) { alert('กรุณากรอกฝ่าย/แผนก'); return null; }
+      if (!lucky)      { alert('กรุณากดสุ่มเลขก่อนบันทึก'); return null; }
 
       setMsg('msgSave', '', '');
       setLoading('loadingEmpList', true);
@@ -634,48 +664,81 @@
       };
 
       try {
-        const res = await apiSaveEmployee(payload);
+        const res = await apiSaveEmployee(payload); // {success, record}
         if (!res || !res.success) {
           setMsg('msgSave', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
-          return;
+          return null;
         }
 
         var record = res.record || {};
         empMap[record.empId] = record;
-        initEmpIds();
-
-        var showName = record.fullName ||
-          ((record.firstName || firstName) + ' ' + (record.lastName || lastName));
-        var showDept  = record.department || department;
-        var showEmp   = record.empId || empId;
-        var showLucky = record.luckyNumber || lucky;
-
-        document.getElementById('ticketName').textContent  = (showName || '-').trim();
-        document.getElementById('ticketDept').textContent  = showDept || '-';
-        document.getElementById('ticketEmpId').textContent = showEmp || '-';
-        document.getElementById('ticketLucky').textContent = showLucky || '----';
-
+        lastSavedRecord = record;
         applyFlagsFromRecord(record);
 
-        setMsg(
-          'msgSave',
-          existedBefore
-            ? 'อัปเดตข้อมูลพนักงานและเลขสุ่มเรียบร้อยแล้ว'
-            : 'สร้างข้อมูลพนักงานใหม่และบันทึกเรียบร้อยแล้ว',
-          'info'
-        );
-
-        document.getElementById('ticketSection').classList.remove('hidden');
-        window.scrollTo({
-          top: document.getElementById('ticketSection').offsetTop - 10,
-          behavior: 'smooth'
-        });
+        return { record: record, existedBefore: existedBefore };
       } catch (err) {
         console.error(err);
         setMsg('msgSave', 'บันทึกไม่สำเร็จ: ' + err.message, 'error');
+        return null;
       } finally {
         setLoading('loadingEmpList', false);
       }
+    }
+
+    // ปุ่ม: บันทึกข้อมูลอย่างเดียว
+    async function saveOnly() {
+      const result = await saveCore();
+      if (!result) return;
+
+      const existedBefore = result.existedBefore;
+      setMsg(
+        'msgSave',
+        existedBefore
+          ? 'อัปเดตข้อมูลพนักงานและเลขสุ่มเรียบร้อยแล้ว'
+          : 'สร้างข้อมูลพนักงานใหม่และบันทึกเรียบร้อยแล้ว',
+        'info'
+      );
+    }
+
+    function renderTicketFromRecord(record) {
+      if (!record) return;
+
+      var showName = record.fullName ||
+        ((record.firstName || '') + ' ' + (record.lastName || '')).trim();
+      var showDept  = record.department || '-';
+      var showEmp   = record.empId || '-';
+      var showLucky = record.luckyNumber || '----';
+
+      document.getElementById('ticketName').textContent  = showName || '-';
+      document.getElementById('ticketDept').textContent  = showDept || '-';
+      document.getElementById('ticketEmpId').textContent = showEmp || '-';
+      document.getElementById('ticketLucky').textContent = showLucky || '----';
+
+      document.getElementById('ticketSection').classList.remove('hidden');
+      window.scrollTo({
+        top: document.getElementById('ticketSection').offsetTop - 10,
+        behavior: 'smooth'
+      });
+    }
+
+    async function showTicket() {
+      if (!lastSavedRecord) {
+        const confirmSave = confirm('ยังไม่มีข้อมูลล่าสุดในระบบ ต้องการบันทึกข้อมูลปัจจุบันก่อนแสดงคูปองหรือไม่?');
+        if (!confirmSave) return;
+        const result = await saveCore();
+        if (!result) return;
+      }
+      renderTicketFromRecord(lastSavedRecord);
+      setMsg('msgSave', 'ดึงข้อมูลล่าสุดจากระบบและแสดงคูปองแล้ว', 'info');
+    }
+
+    function printTicket() {
+      const section = document.getElementById('ticketSection');
+      if (section.classList.contains('hidden')) {
+        alert('ยังไม่มีคูปองให้บันทึก กรุณากด "แสดงคูปองจากข้อมูลล่าสุด" ก่อน');
+        return;
+      }
+      window.print();
     }
 
     document.getElementById('empId').addEventListener('input', handleEmpIdInput);
