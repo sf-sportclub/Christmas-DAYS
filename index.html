@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ลงทะเบียนสุ่มเลขพนักงาน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #f4f4f8;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+    }
+    .card {
+      max-width: 540px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 16px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    input[readonly] {
+      background: #f7f7fb;
+    }
+    .row-2 {
+      display: flex;
+      gap: 8px;
+    }
+    .row-2 > div {
+      flex: 1 1 0;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+      white-space: nowrap;
+    }
+    button:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(37,99,235,0.4);
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #374151;
+    }
+    .btn-full {
+      width: 100%;
+      margin-top: 6px;
+    }
+    .msg {
+      font-size: 0.85rem;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+    .msg.info { color: #2563eb; }
+    .msg.warn { color: #b45309; }
+    .msg.error { color: #b91c1c; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+    .check-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .ticket-wrap {
+      max-width: 540px;
+      margin: 16px auto 0;
+    }
+    .ticket {
+      position: relative;
+      background: linear-gradient(135deg,#f97316,#ec4899);
+      color: #fff;
+      border-radius: 16px;
+      padding: 16px 16px 18px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+      overflow: hidden;
+    }
+    .ticket:before,
+    .ticket:after {
+      content: "";
+      position: absolute;
+      top: 16px;
+      bottom: 16px;
+      width: 18px;
+      background: #f4f4f8;
+      border-radius: 999px;
+    }
+    .ticket:before { left: -9px; }
+    .ticket:after { right: -9px; }
+    .ticket-inner {
+      position: relative;
+      z-index: 1;
+    }
+    .ticket-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .ticket-sub {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-bottom: 10px;
+    }
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .ticket-label {
+      opacity: 0.9;
+    }
+    .ticket-value {
+      font-weight: 600;
+    }
+    .ticket-lucky {
+      margin-top: 10px;
+      text-align: center;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.25);
+      border: 1px dashed rgba(255,255,255,0.65);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+    }
+    .ticket-hint {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .hidden { display: none; }
+
+    .footer-tip {
+      max-width: 540px;
+      margin: 10px auto 0;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    .loading {
+      font-size: 0.8rem;
+      color: #6b7280;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 4px;
+    }
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #9ca3af;
+      animation: blink 1s infinite ease-in-out;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; }
+      40% { opacity: 1; }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .card {
+        padding: 12px 12px 16px;
+      }
+      .row-2 {
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .card, .footer-tip {
+        display: none !important;
+      }
+      .ticket-wrap {
+        margin-top: 0;
+      }
+      .ticket {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>ลงทะเบียนสุ่มเลขพนักงาน</h1>
+
+  <div class="card">
+    <div style="margin-bottom: 10px; font-size: 0.85rem; color:#4b5563;">
+      ระบบจะโหลดรหัสพนักงานจากคอลัมน์ A ทั้งหมดให้เลือกในช่องด้านล่าง
+      เมื่อพิมพ์หรือเลือก “รหัสที่มีอยู่” ข้อมูลชื่อ–นามสกุล / ฝ่าย / เลขสุ่ม / GAME / ICE CREAM จะเด้งขึ้นมาอัตโนมัติ
+      ถ้ารหัสไม่อยู่ในระบบ เมื่อบันทึกจะสร้างแถวใหม่ให้
+    </div>
+
+    <label for="empId">รหัสพนักงาน</label>
+    <input type="text" id="empId" list="empIdList" placeholder="เช่น 1000000001" autocomplete="off">
+    <datalist id="empIdList"></datalist>
+
+    <div class="btn-row">
+      <button type="button" class="btn-secondary" onclick="triggerEmpLookup()">
+        🔍 ดึงข้อมูลจากรหัส
+      </button>
+      <span id="loadingEmpList" class="loading hidden">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </span>
+    </div>
+    <div id="msgEmp" class="msg"></div>
+
+    <div class="row-2">
+      <div>
+        <label for="firstName">ชื่อ</label>
+        <input type="text" id="firstName" placeholder="ชื่อจริง">
+      </div>
+      <div>
+        <label for="lastName">นามสกุล</label>
+        <input type="text" id="lastName" placeholder="นามสกุล">
+      </div>
+    </div>
+
+    <label for="department">ฝ่าย / แผนก</label>
+    <input type="text" id="department" placeholder="เช่น Top Department">
+
+    <label for="luckyNumber">
+      เลขสุ่ม
+      <span class="badge">สร้างครั้งเดียว/ดูเลขเดิม</span>
+    </label>
+    <input type="text" id="luckyNumber" readonly placeholder="กดปุ่ม &quot;สุ่มเลข&quot;">
+    <div class="btn-row">
+      <button type="button" class="btn-outline" onclick="requestLucky()">
+        🎲 สุ่มเลข / ดูเลขเดิม
+      </button>
+      <span id="loadingLucky" class="loading hidden">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </span>
+    </div>
+    <div id="msgLucky" class="msg"></div>
+
+    <hr style="margin: 10px 0; border:none; border-top:1px dashed #e5e7eb;">
+
+    <div class="check-row">
+      <label class="check-label">
+        <input type="checkbox" id="chkGame">
+        ลงทะเบียนโซน GAME
+      </label>
+      <span id="msgGame" class="msg" style="margin:0;"></span>
+    </div>
+    <div class="check-row">
+      <label class="check-label">
+        <input type="checkbox" id="chkIce">
+        ลงทะเบียน ICE CREAM
+      </label>
+      <span id="msgIce" class="msg" style="margin:0;"></span>
+    </div>
+
+    <button type="button" class="btn-primary btn-full" onclick="saveAndShowTicket()">
+      ✅ บันทึก & แสดงตั๋ว
+    </button>
+    <div id="msgSave" class="msg"></div>
+  </div>
+
+  <div id="ticketSection" class="ticket-wrap hidden">
+    <div class="ticket">
+      <div class="ticket-inner">
+        <div class="ticket-title">🎟️ ตั๋วสุ่มเลขพนักงาน</div>
+        <div class="ticket-sub">ยินดีด้วย! คุณได้รับเลขสำหรับกิจกรรม</div>
+
+        <div class="ticket-row">
+          <div class="ticket-label">ชื่อ-นามสกุล</div>
+          <div class="ticket-value" id="ticketName">-</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">ฝ่าย / แผนก</div>
+          <div class="ticket-value" id="ticketDept">-</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">รหัสพนักงาน</div>
+          <div class="ticket-value" id="ticketEmpId">-</div>
+        </div>
+
+        <div class="ticket-lucky">
+          เลขของคุณ: <span id="ticketLucky">----</span>
+        </div>
+
+        <div class="ticket-hint">
+          * แนะนำให้ถ่ายรูปหน้าจอ (Screenshot) หรือพิมพ์หน้านี้เก็บไว้เป็นหลักฐานตั๋วของคุณ
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-tip">
+    เปิดจากมือถือสามารถถ่ายรูปหน้าจอเก็บตั๋วได้เลย
+  </div>
+
+  <script>
+    // 🔗 เปลี่ยนตรงนี้เป็น URL Web App ของพี่
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxwapj50dTmbyjvgNWVbYXoI0sGajEUN9WsmULjbLujD9_VjwgybRWUtUOp1ZKNWkYC/exec';
+
+    var empMap = {}; // key = empId
+
+    async function apiGetEmployees() {
+      const res = await fetch(API_URL + '?action=getEmployees');
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return (json.result && json.result.employees) || [];
+    }
+
+    async function apiPost(action, payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action, payload: payload || {} })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    function setMsg(id, text, type) {
+      var el = document.getElementById(id);
+      el.textContent = text || '';
+      el.className = 'msg ' + (type || '');
+    }
+
+    function setLoading(id, isLoading) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('hidden', !isLoading);
+    }
+
+    function resetFlagsUI() {
+      var chkGame = document.getElementById('chkGame');
+      var chkIce  = document.getElementById('chkIce');
+      chkGame.checked = false;
+      chkIce.checked  = false;
+      chkGame.disabled = false;
+      chkIce.disabled  = false;
+      setMsg('msgGame', 'GAME: ยังไม่ได้กรอก', 'warn');
+      setMsg('msgIce', 'ICE CREAM: ยังไม่ได้กรอก', 'warn');
+    }
+
+    function applyFlagsFromRecord(record) {
+      var chkGame = document.getElementById('chkGame');
+      var chkIce  = document.getElementById('chkIce');
+
+      var hasGame = !!(record && record.game);
+      var hasIce  = !!(record && record.ice);
+
+      chkGame.checked = hasGame;
+      chkIce.checked  = hasIce;
+
+      if (hasGame) {
+        chkGame.disabled = true;
+        setMsg('msgGame', 'GAME: กรอกเรียบร้อยแล้ว', 'info');
+      } else {
+        chkGame.disabled = false;
+        setMsg('msgGame', 'GAME: ยังไม่ได้กรอก', 'warn');
+      }
+
+      if (hasIce) {
+        chkIce.disabled = true;
+        setMsg('msgIce', 'ICE CREAM: กรอกเรียบร้อยแล้ว', 'info');
+      } else {
+        chkIce.disabled = false;
+        setMsg('msgIce', 'ICE CREAM: ยังไม่ได้กรอก', 'warn');
+      }
+    }
+
+    function fillFormFromRecord(record) {
+      if (!record) return;
+
+      document.getElementById('empId').value      = record.empId || '';
+      document.getElementById('firstName').value  = record.firstName || '';
+      document.getElementById('lastName').value   = record.lastName || '';
+      document.getElementById('department').value = record.department || '';
+      document.getElementById('luckyNumber').value = record.luckyNumber || '';
+
+      if (record.luckyNumber) {
+        setMsg('msgLucky', 'รหัสนี้มีเลขสุ่มอยู่แล้ว ระบบแสดงเลขเดิมให้แล้ว', 'info');
+      } else {
+        setMsg('msgLucky', 'ยังไม่มีเลขสุ่มสำหรับรหัสนี้ กรุณากดปุ่ม "สุ่มเลข"', 'warn');
+      }
+
+      applyFlagsFromRecord(record);
+      setMsg('msgEmp', 'พบข้อมูลพนักงานจากระบบแล้ว', 'info');
+    }
+
+    function clearFormForNew(empId) {
+      document.getElementById('firstName').value  = '';
+      document.getElementById('lastName').value   = '';
+      document.getElementById('department').value = '';
+      document.getElementById('luckyNumber').value = '';
+      resetFlagsUI();
+      if (empId) {
+        setMsg('msgEmp', 'ไม่พบรหัสนี้ในระบบ เมื่อบันทึกจะสร้างข้อมูลใหม่ให้', 'warn');
+      } else {
+        setMsg('msgEmp', '', '');
+      }
+      setMsg('msgLucky', '', '');
+    }
+
+    function handleEmpIdInput() {
+      var v = document.getElementById('empId').value.trim();
+      if (!v) {
+        clearFormForNew('');
+        return;
+      }
+      var rec = empMap[v];
+      if (rec) {
+        fillFormFromRecord(rec);
+      } else {
+        clearFormForNew(v);
+      }
+    }
+
+    function triggerEmpLookup() {
+      handleEmpIdInput();
+    }
+
+    async function initEmpIds() {
+      try {
+        setLoading('loadingEmpList', true);
+        setMsg('msgEmp', 'กำลังโหลดรายชื่อรหัสพนักงาน...', 'info');
+        const list = await apiGetEmployees();
+
+        empMap = {};
+        var dl = document.getElementById('empIdList');
+        dl.innerHTML = '';
+
+        (list || []).forEach(function(r) {
+          if (!r.empId) return;
+          empMap[r.empId] = r;
+
+          var opt = document.createElement('option');
+          var label = (r.empId + ' ' + (r.fullName || ((r.firstName || '') + ' ' + (r.lastName || '')))).trim();
+          opt.value = r.empId;
+          opt.label = label;
+          dl.appendChild(opt);
+        });
+
+        setMsg('msgEmp', 'พิมพ์รหัสพนักงานเพื่อเลือกจากรายการที่มีอยู่ หรือกรอกรหัสใหม่ได้เลย', 'info');
+      } catch (err) {
+        console.error(err);
+        setMsg('msgEmp', 'โหลดรายชื่อรหัสพนักงานไม่สำเร็จ: ' + err.message, 'error');
+      } finally {
+        setLoading('loadingEmpList', false);
+      }
+    }
+
+    async function requestLucky() {
+      var empId = document.getElementById('empId').value.trim();
+      if (!empId) {
+        alert('กรุณากรอกรหัสพนักงานก่อนสุ่มเลข');
+        return;
+      }
+      setMsg('msgLucky', '', '');
+      setMsg('msgSave', '', '');
+      setLoading('loadingLucky', true);
+
+      try {
+        const res = await apiPost('getLuckyNumber', { empId: empId });
+        if (!res) {
+          setMsg('msgLucky', 'ไม่สามารถสุ่มเลขได้ กรุณาลองใหม่อีกครั้ง', 'error');
+          return;
+        }
+        document.getElementById('luckyNumber').value = res.luckyNumber || '';
+
+        if (res.isNew) {
+          setMsg('msgLucky', 'สุ่มเลขใหม่ให้แล้ว โปรดกดบันทึกเพื่อเก็บลงระบบ', 'info');
+        } else {
+          setMsg('msgLucky', 'รหัสนี้มีเลขสุ่มอยู่แล้ว แสดงเลขเดิมให้เรียบร้อย', 'info');
+        }
+
+        if (!empMap[res.empId]) empMap[res.empId] = { empId: res.empId };
+        empMap[res.empId].luckyNumber = res.luckyNumber;
+      } catch (err) {
+        console.error(err);
+        setMsg('msgLucky', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
+      } finally {
+        setLoading('loadingLucky', false);
+      }
+    }
+
+    async function saveAndShowTicket() {
+      var empId      = document.getElementById('empId').value.trim();
+      var firstName  = document.getElementById('firstName').value.trim();
+      var lastName   = document.getElementById('lastName').value.trim();
+      var department = document.getElementById('department').value.trim();
+      var lucky      = document.getElementById('luckyNumber').value.trim();
+      var gameChecked = document.getElementById('chkGame').checked;
+      var iceChecked  = document.getElementById('chkIce').checked;
+
+      if (!empId)      { alert('กรุณากรอกรหัสพนักงาน'); return; }
+      if (!firstName)  { alert('กรุณากรอกชื่อ'); return; }
+      if (!lastName)   { alert('กรุณากรอกนามสกุล'); return; }
+      if (!department) { alert('กรุณากรอกฝ่าย/แผนก'); return; }
+      if (!lucky)      { alert('กรุณากดสุ่มเลขก่อนบันทึก'); return; }
+
+      setMsg('msgSave', '', '');
+      setLoading('loadingEmpList', true);
+
+      var existedBefore = !!empMap[empId];
+
+      var payload = {
+        empId: empId,
+        firstName: firstName,
+        lastName: lastName,
+        department: department,
+        luckyNumber: lucky,
+        game: gameChecked,
+        ice: iceChecked
+      };
+
+      try {
+        const res = await apiPost('saveEmployee', payload); // {success, record}
+        if (!res || !res.success) {
+          setMsg('msgSave', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+          return;
+        }
+
+        var record = res.record || {};
+        empMap[record.empId] = record;
+        initEmpIds(); // reload รายชื่อ (ไม่จำเป็นต้องรอ)
+
+        var showName = record.fullName ||
+          ((record.firstName || firstName) + ' ' + (record.lastName || lastName));
+        var showDept  = record.department || department;
+        var showEmp   = record.empId || empId;
+        var showLucky = record.luckyNumber || lucky;
+
+        document.getElementById('ticketName').textContent  = (showName || '-').trim();
+        document.getElementById('ticketDept').textContent  = showDept || '-';
+        document.getElementById('ticketEmpId').textContent = showEmp || '-';
+        document.getElementById('ticketLucky').textContent = showLucky || '----';
+
+        applyFlagsFromRecord(record);
+
+        setMsg(
+          'msgSave',
+          existedBefore
+            ? 'อัปเดตข้อมูลพนักงานและเลขสุ่มเรียบร้อยแล้ว'
+            : 'สร้างข้อมูลพนักงานใหม่และบันทึกเรียบร้อยแล้ว',
+          'info'
+        );
+
+        document.getElementById('ticketSection').classList.remove('hidden');
+        window.scrollTo({
+          top: document.getElementById('ticketSection').offsetTop - 10,
+          behavior: 'smooth'
+        });
+      } catch (err) {
+        console.error(err);
+        setMsg('msgSave', 'บันทึกไม่สำเร็จ: ' + err.message, 'error');
+      } finally {
+        setLoading('loadingEmpList', false);
+      }
+    }
+
+    document.getElementById('empId').addEventListener('input', handleEmpIdInput);
+    document.getElementById('empId').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerEmpLookup();
+      }
+    });
+
+    resetFlagsUI();
+    initEmpIds(); // ดึงรหัสจาก .gs ทันทีตอนโหลดหน้า
+  </script>
+</body>
+</html>
