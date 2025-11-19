@@ -13,38 +13,52 @@
     body {
       margin: 0;
       padding: 16px;
-      background: #f4f4f8;
-      color: #222;
+      /* พื้นหลัง: ใช้รูปตรง ๆ ไม่มีทับสี */
+      background: #000
+        url('https://firebasestorage.googleapis.com/v0/b/pichayut-40dd2.firebasestorage.app/o/pexels-cottonbro-6072439.jpg?alt=media&token=7732ed40-e69f-477e-b342-571957c9c09a')
+        no-repeat center center fixed;
+      background-size: cover;
+      color: #f9fafb;
+      min-height: 100vh;
     }
     h1 {
       text-align: center;
       margin-bottom: 12px;
       font-size: 1.4rem;
+      color: #fefce8;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
     }
     .card {
       max-width: 540px;
       margin: 0 auto;
-      background: #fff;
-      border-radius: 12px;
+      background: rgba(15,23,42,0.85);
+      border-radius: 16px;
       padding: 16px 16px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      border: 1px solid rgba(248,250,252,0.15);
     }
     label {
       display: block;
       margin-bottom: 4px;
       font-size: 0.9rem;
       font-weight: 600;
+      color: #e5e7eb;
     }
     input[type="text"] {
       width: 100%;
       padding: 8px 10px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #4b5563;
       font-size: 0.95rem;
       margin-bottom: 10px;
+      background: rgba(15,23,42,0.9);
+      color: #f9fafb;
+    }
+    input[type="text"]::placeholder {
+      color: #9ca3af;
     }
     input[readonly] {
-      background: #f7f7fb;
+      background: rgba(15,23,42,0.8);
     }
     .row-2 {
       display: flex;
@@ -75,21 +89,22 @@
     }
     button:active {
       transform: scale(0.97);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
     }
     .btn-primary {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(37,99,235,0.4);
+      background: linear-gradient(135deg, #16a34a, #15803d, #b91c1c);
+      color: #fefce8;
+      box-shadow: 0 4px 12px rgba(22,163,74,0.6);
     }
     .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+      background: rgba(31,41,55,0.9);
+      color: #e5e7eb;
+      border: 1px solid rgba(148,163,184,0.7);
     }
     .btn-outline {
       background: transparent;
-      border: 1px solid #d1d5db;
-      color: #374151;
+      border: 1px solid rgba(148,163,184,0.9);
+      color: #e5e7eb;
     }
     .btn-full {
       width: 100%;
@@ -100,19 +115,20 @@
       margin-top: 2px;
       margin-bottom: 6px;
     }
-    .msg.info { color: #2563eb; }
-    .msg.warn { color: #b45309; }
-    .msg.error { color: #b91c1c; }
+    .msg.info { color: #bfdbfe; }
+    .msg.warn { color: #fbbf24; }
+    .msg.error { color: #fecaca; }
 
     .badge {
       display: inline-block;
       padding: 2px 8px;
       font-size: 0.7rem;
       border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: rgba(254,240,138,0.15);
+      color: #facc15;
       margin-left: 4px;
       vertical-align: middle;
+      border: 1px solid rgba(250,204,21,0.4);
     }
 
     .check-row {
@@ -127,10 +143,12 @@
       align-items: center;
       gap: 6px;
       font-size: 0.9rem;
+      color: #e5e7eb;
     }
     .check-label input[type="checkbox"] {
       width: 18px;
       height: 18px;
+      accent-color: #16a34a;
     }
 
     .ticket-wrap {
@@ -139,12 +157,13 @@
     }
     .ticket {
       position: relative;
-      background: linear-gradient(135deg,#f97316,#ec4899);
+      background: radial-gradient(circle at top left, #facc15, #b91c1c 40%, #14532d 100%);
       color: #fff;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 16px 16px 18px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.55);
       overflow: hidden;
+      border: 1px solid rgba(250,250,250,0.4);
     }
     .ticket:before,
     .ticket:after {
@@ -153,7 +172,7 @@
       top: 16px;
       bottom: 16px;
       width: 18px;
-      background: #f4f4f8;
+      background: #0f172a;
       border-radius: 999px;
     }
     .ticket:before { left: -9px; }
@@ -164,12 +183,18 @@
     }
     .ticket-title {
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ticket-title span.emoji {
+      font-size: 1.2rem;
     }
     .ticket-sub {
       font-size: 0.85rem;
-      opacity: 0.9;
+      opacity: 0.95;
       margin-bottom: 10px;
     }
     .ticket-row {
@@ -189,15 +214,15 @@
       text-align: center;
       padding: 10px;
       border-radius: 12px;
-      background: rgba(15,23,42,0.25);
-      border: 1px dashed rgba(255,255,255,0.65);
+      background: rgba(15,23,42,0.35);
+      border: 1px dashed rgba(255,255,255,0.85);
       font-size: 1.1rem;
       letter-spacing: 0.15em;
     }
     .ticket-hint {
       margin-top: 6px;
       font-size: 0.8rem;
-      opacity: 0.9;
+      opacity: 0.95;
       text-align: center;
     }
 
@@ -207,13 +232,14 @@
       max-width: 540px;
       margin: 10px auto 0;
       font-size: 0.8rem;
-      color: #6b7280;
+      color: #e5e7eb;
       text-align: center;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
     }
 
     .loading {
       font-size: 0.8rem;
-      color: #6b7280;
+      color: #e5e7eb;
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -264,13 +290,14 @@
   </style>
 </head>
 <body>
-  <h1>ลงทะเบียนสุ่มเลขพนักงาน</h1>
+  <h1>🎄 ลงทะเบียนสุ่มเลขพนักงาน – Christmas Event 🎁</h1>
 
   <div class="card">
-    <div style="margin-bottom: 10px; font-size: 0.85rem; color:#4b5563;">
-     พิมพ์รหัสพนักงานในช่องด้านล่าง
-– ถ้ามีรหัสนี้ในระบบแล้ว ระบบจะแสดงชื่อ–นามสกุล, ฝ่าย,
-– ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ
+    <div style="margin-bottom: 10px; font-size: 0.85rem; color:#e5e7eb;">
+      แบบฟอร์มนี้ใช้สำหรับลงทะเบียนกิจกรรมเทศกาลคริสต์มาสของพนักงาน<br>
+      - พิมพ์รหัสพนักงานในช่องด้านล่าง<br>
+      - ถ้ารหัสนี้มีอยู่ในระบบแล้ว ระบบจะแสดง <strong>ชื่อ–นามสกุล, ฝ่าย, เลขสุ่ม, สถานะ GAME และ ICE CREAM</strong> ให้อัตโนมัติ<br>
+      - ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ
     </div>
 
     <label for="empId">รหัสพนักงาน</label>
@@ -305,7 +332,7 @@
 
     <label for="luckyNumber">
       เลขสุ่ม
-      <span class="badge">สร้างครั้งเดียว/ดูเลขเดิม</span>
+      <span class="badge">ใช้สำหรับจับรางวัลวันคริสต์มาส</span>
     </label>
     <input type="text" id="luckyNumber" readonly placeholder="กดปุ่ม &quot;สุ่มเลข&quot;">
     <div class="btn-row">
@@ -320,7 +347,7 @@
     </div>
     <div id="msgLucky" class="msg"></div>
 
-    <hr style="margin: 10px 0; border:none; border-top:1px dashed #e5e7eb;">
+    <hr style="margin: 10px 0; border:none; border-top:1px dashed rgba(148,163,184,0.6);">
 
     <div class="check-row">
       <label class="check-label">
@@ -338,7 +365,7 @@
     </div>
 
     <button type="button" class="btn-primary btn-full" onclick="saveAndShowTicket()">
-      ✅ บันทึก & แสดงตั๋ว
+      ✅ บันทึก & แสดงคูปองสุ่มเลข
     </button>
     <div id="msgSave" class="msg"></div>
   </div>
@@ -346,8 +373,11 @@
   <div id="ticketSection" class="ticket-wrap hidden">
     <div class="ticket">
       <div class="ticket-inner">
-        <div class="ticket-title">🎟️ ตั๋วสุ่มเลขพนักงาน</div>
-        <div class="ticket-sub">ยินดีด้วย! คุณได้รับเลขสำหรับกิจกรรม</div>
+        <div class="ticket-title">
+          <span class="emoji">🎄</span>
+          <span>Christmas Lucky Ticket</span>
+        </div>
+        <div class="ticket-sub">Merry Christmas! คุณได้รับคูปองสุ่มเลขสำหรับใช้ในกิจกรรมจับรางวัล</div>
 
         <div class="ticket-row">
           <div class="ticket-label">ชื่อ-นามสกุล</div>
@@ -367,23 +397,21 @@
         </div>
 
         <div class="ticket-hint">
-          * แนะนำให้ถ่ายรูปหน้าจอ (Screenshot) หรือพิมพ์หน้านี้เก็บไว้เป็นหลักฐานตั๋วของคุณ
+          * แนะนำให้ถ่ายรูปหน้าจอเก็บคูปองนี้ไว้<br>เพื่อนำไปใช้ยืนยันสิทธิ์ในวันงานเทศกาลคริสต์มาส
         </div>
       </div>
     </div>
   </div>
 
   <div class="footer-tip">
-    เปิดจากมือถือสามารถถ่ายรูปหน้าจอเก็บตั๋วได้เลย
+    เปิดจากมือถือสามารถถ่ายรูปหน้าจอเก็บคูปองได้เลย 🎅
   </div>
 
   <script>
-    // 🔗 เปลี่ยนตรงนี้เป็น URL Web App ของพี่
     const API_URL = 'https://script.google.com/macros/s/AKfycbxRTc4Ra2v4UFOfr-ZvrDxUvQMVBvBcWj9J5QZlHAtbpGNYSPbn7x3EeJdtg0QZ41wT/exec';
 
     var empMap = {}; // key = empId
 
-    // --- เรียก API (.gs) ---
     async function apiGetEmployees() {
       const res = await fetch(API_URL + '?action=getEmployees');
       const json = await res.json();
@@ -410,7 +438,6 @@
       return json.result;
     }
 
-    // --- UI Helpers ---
     function setMsg(id, text, type) {
       var el = document.getElementById(id);
       el.textContent = text || '';
@@ -607,7 +634,7 @@
       };
 
       try {
-        const res = await apiSaveEmployee(payload); // {success, record}
+        const res = await apiSaveEmployee(payload);
         if (!res || !res.success) {
           setMsg('msgSave', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
           return;
@@ -615,7 +642,7 @@
 
         var record = res.record || {};
         empMap[record.empId] = record;
-        initEmpIds(); // reload รายชื่อ (ไม่จำเป็นต้องรอ)
+        initEmpIds();
 
         var showName = record.fullName ||
           ((record.firstName || firstName) + ' ' + (record.lastName || lastName));
@@ -651,7 +678,6 @@
       }
     }
 
-    // event: เวลาพิมพ์รหัสให้เช็คทันที
     document.getElementById('empId').addEventListener('input', handleEmpIdInput);
     document.getElementById('empId').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -660,7 +686,6 @@
       }
     });
 
-    // init ตอนโหลดหน้า
     resetFlagsUI();
     initEmpIds();
   </script>
