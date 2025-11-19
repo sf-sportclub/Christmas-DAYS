@@ -13,7 +13,6 @@
     body {
       margin: 0;
       padding: 16px;
-      /* พื้นหลัง: ใช้รูปตรง ๆ ไม่มีทับสี */
       background: #000
         url('https://firebasestorage.googleapis.com/v0/b/pichayut-40dd2.firebasestorage.app/o/pexels-cottonbro-6072439.jpg?alt=media&token=7732ed40-e69f-477e-b342-571957c9c09a')
         no-repeat center center fixed;
@@ -131,26 +130,6 @@
       border: 1px solid rgba(250,204,21,0.4);
     }
 
-    .check-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin: 4px 0;
-    }
-    .check-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.9rem;
-      color: #e5e7eb;
-    }
-    .check-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #16a34a;
-    }
-
     .ticket-wrap {
       max-width: 540px;
       margin: 16px auto 0;
@@ -224,6 +203,49 @@
       font-size: 0.8rem;
       opacity: 0.95;
       text-align: center;
+    }
+
+    .ticket-tabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+    .ticket-tab {
+      flex: 1 1 0;
+      border-radius: 10px;
+      padding: 6px 8px;
+      background: rgba(15,23,42,0.35);
+      border: 1px dashed rgba(248,250,252,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+    }
+    .ticket-tab.used {
+      background: rgba(22,163,74,0.4);
+      border-style: solid;
+      border-color: rgba(22,163,74,0.9);
+    }
+    .ticket-tab-title {
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .ticket-tab-status {
+      opacity: 0.95;
+    }
+
+    .ticket-qr {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .ticket-qr-label {
+      font-size: 0.8rem;
+      opacity: 0.95;
     }
 
     .ticket-print-btn {
@@ -305,8 +327,9 @@
     <div style="margin-bottom: 10px; font-size: 0.85rem; color:#e5e7eb;">
       แบบฟอร์มนี้ใช้สำหรับลงทะเบียนกิจกรรมเทศกาลคริสต์มาสของพนักงาน<br>
       - พิมพ์รหัสพนักงานในช่องด้านล่าง<br>
-      - ถ้ารหัสนี้มีอยู่ในระบบแล้ว ระบบจะแสดง <strong>ชื่อ–นามสกุล, ฝ่าย, เลขสุ่ม, สถานะ GAME และ ICE CREAM</strong> ให้อัตโนมัติ<br>
-      - ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ
+      - ถ้ารหัสนี้มีอยู่ในระบบแล้ว ระบบจะแสดง <strong>ชื่อ–นามสกุล, ฝ่าย, เลขสุ่ม</strong> ให้อัตโนมัติ<br>
+      - ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ<br>
+      - สถานะ <strong>GAME / ICE CREAM</strong> จะแสดงบนคูปอง ตามที่ติ๊กใน Excel (คอลัมน์ F, G) หลังบ้าน
     </div>
 
     <label for="empId">รหัสพนักงาน</label>
@@ -356,23 +379,6 @@
     </div>
     <div id="msgLucky" class="msg"></div>
 
-    <hr style="margin: 10px 0; border:none; border-top:1px dashed rgba(148,163,184,0.6);">
-
-    <div class="check-row">
-      <label class="check-label">
-        <input type="checkbox" id="chkGame">
-        ลงทะเบียนโซน GAME
-      </label>
-      <span id="msgGame" class="msg" style="margin:0;"></span>
-    </div>
-    <div class="check-row">
-      <label class="check-label">
-        <input type="checkbox" id="chkIce">
-        ลงทะเบียน ICE CREAM
-      </label>
-      <span id="msgIce" class="msg" style="margin:0;"></span>
-    </div>
-
     <!-- ปุ่มบันทึกเฉพาะข้อมูล -->
     <div class="btn-row">
       <button type="button" class="btn-secondary btn-full" onclick="saveOnly()">
@@ -414,6 +420,24 @@
           เลขของคุณ: <span id="ticketLucky">----</span>
         </div>
 
+        <!-- แท็บ GAME / ICE CREAM แสดงสถานะจาก Excel -->
+        <div class="ticket-tabs">
+          <div class="ticket-tab" id="ticketGameTab">
+            <div class="ticket-tab-title">GAME</div>
+            <div class="ticket-tab-status" id="ticketGameStatus">ยังไม่ลงทะเบียน</div>
+          </div>
+          <div class="ticket-tab" id="ticketIceTab">
+            <div class="ticket-tab-title">ICE CREAM</div>
+            <div class="ticket-tab-status" id="ticketIceStatus">ยังไม่ลงทะเบียน</div>
+          </div>
+        </div>
+
+        <!-- QR CODE ของรหัสพนักงาน -->
+        <div class="ticket-qr">
+          <div id="ticketQr"></div>
+          <div class="ticket-qr-label">สแกน QR นี้เพื่ออ่านรหัสพนักงานในระบบ</div>
+        </div>
+
         <div class="ticket-hint">
           * แนะนำให้ถ่ายรูปหน้าจอ หรือบันทึก/พิมพ์คูปองนี้เก็บไว้<br>เพื่อนำไปใช้ยืนยันสิทธิ์ในวันงานเทศกาลคริสต์มาส
         </div>
@@ -432,9 +456,12 @@
     เปิดจากมือถือสามารถถ่ายรูปหน้าจอ หรือกด “บันทึก / พิมพ์คูปอง” เพื่อเก็บคูปองได้เลย 🎅
   </div>
 
+  <!-- QRCode library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <script>
     // URL Web App ของ Apps Script
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxEYCCpkF0tsDXieAcpsLhAIEQvFEZyWBNJB-HBjJV-p9LS-rhA4jAhzNMrWxx1fETb/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxJtFq2AsruKcOCQQrEqfLBGpYlXOiRGdMRIlisDWPfszT92hv7KediWaX6g7sdgp5c/exec';
 
     var empMap = {};            // key = empId
     var lastSavedRecord = null; // เก็บ record ล่าสุดที่บันทึกสำเร็จ
@@ -477,44 +504,6 @@
       el.classList.toggle('hidden', !isLoading);
     }
 
-    function resetFlagsUI() {
-      var chkGame = document.getElementById('chkGame');
-      var chkIce  = document.getElementById('chkIce');
-      chkGame.checked = false;
-      chkIce.checked  = false;
-      chkGame.disabled = false;
-      chkIce.disabled  = false;
-      setMsg('msgGame', 'GAME: ยังไม่ได้กรอก', 'warn');
-      setMsg('msgIce', 'ICE CREAM: ยังไม่ได้กรอก', 'warn');
-    }
-
-    function applyFlagsFromRecord(record) {
-      var chkGame = document.getElementById('chkGame');
-      var chkIce  = document.getElementById('chkIce');
-
-      var hasGame = !!(record && record.game);
-      var hasIce  = !!(record && record.ice);
-
-      chkGame.checked = hasGame;
-      chkIce.checked  = hasIce;
-
-      if (hasGame) {
-        chkGame.disabled = true;
-        setMsg('msgGame', 'GAME: กรอกเรียบร้อยแล้ว', 'info');
-      } else {
-        chkGame.disabled = false;
-        setMsg('msgGame', 'GAME: ยังไม่ได้กรอก', 'warn');
-      }
-
-      if (hasIce) {
-        chkIce.disabled = true;
-        setMsg('msgIce', 'ICE CREAM: กรอกเรียบร้อยแล้ว', 'info');
-      } else {
-        chkIce.disabled = false;
-        setMsg('msgIce', 'ICE CREAM: ยังไม่ได้กรอก', 'warn');
-      }
-    }
-
     function fillFormFromRecord(record) {
       if (!record) return;
 
@@ -530,7 +519,6 @@
         setMsg('msgLucky', 'ยังไม่มีเลขสุ่มสำหรับรหัสนี้ กรุณากดปุ่ม "สุ่มเลข"', 'warn');
       }
 
-      applyFlagsFromRecord(record);
       setMsg('msgEmp', 'พบข้อมูลพนักงานจากระบบแล้ว', 'info');
     }
 
@@ -539,7 +527,6 @@
       document.getElementById('lastName').value   = '';
       document.getElementById('department').value = '';
       document.getElementById('luckyNumber').value = '';
-      resetFlagsUI();
       if (empId) {
         setMsg('msgEmp', 'ไม่พบรหัสนี้ในระบบ เมื่อบันทึกจะสร้างข้อมูลใหม่ให้', 'warn');
       } else {
@@ -639,8 +626,6 @@
       var lastName   = document.getElementById('lastName').value.trim();
       var department = document.getElementById('department').value.trim();
       var lucky      = document.getElementById('luckyNumber').value.trim();
-      var gameChecked = document.getElementById('chkGame').checked;
-      var iceChecked  = document.getElementById('chkIce').checked;
 
       if (!empId)      { alert('กรุณากรอกรหัสพนักงาน'); return null; }
       if (!firstName)  { alert('กรุณากรอกชื่อ'); return null; }
@@ -658,9 +643,8 @@
         firstName: firstName,
         lastName: lastName,
         department: department,
-        luckyNumber: lucky,
-        game: gameChecked,
-        ice: iceChecked
+        luckyNumber: lucky
+        // GAME/ICE จะไม่ส่งจากหน้าเว็บแล้ว ปล่อยให้ Excel หลังบ้านจัดการ
       };
 
       try {
@@ -673,7 +657,6 @@
         var record = res.record || {};
         empMap[record.empId] = record;
         lastSavedRecord = record;
-        applyFlagsFromRecord(record);
 
         return { record: record, existedBefore: existedBefore };
       } catch (err) {
@@ -700,6 +683,33 @@
       );
     }
 
+    function updateTicketTabs(record) {
+      var gameTab = document.getElementById('ticketGameTab');
+      var iceTab  = document.getElementById('ticketIceTab');
+      var gameStatus = document.getElementById('ticketGameStatus');
+      var iceStatus  = document.getElementById('ticketIceStatus');
+
+      var hasGame = !!(record && record.game);
+      var hasIce  = !!(record && record.ice);
+
+      gameTab.classList.toggle('used', hasGame);
+      iceTab.classList.toggle('used', hasIce);
+
+      gameStatus.textContent = hasGame ? 'ลงทะเบียน / ใช้สิทธิ์แล้ว' : 'ยังไม่ลงทะเบียน';
+      iceStatus.textContent  = hasIce  ? 'ลงทะเบียน / ใช้สิทธิ์แล้ว' : 'ยังไม่ลงทะเบียน';
+    }
+
+    function renderTicketQr(empId) {
+      var container = document.getElementById('ticketQr');
+      container.innerHTML = '';
+      if (!empId) return;
+      new QRCode(container, {
+        text: String(empId),
+        width: 96,
+        height: 96
+      });
+    }
+
     function renderTicketFromRecord(record) {
       if (!record) return;
 
@@ -713,6 +723,9 @@
       document.getElementById('ticketDept').textContent  = showDept || '-';
       document.getElementById('ticketEmpId').textContent = showEmp || '-';
       document.getElementById('ticketLucky').textContent = showLucky || '----';
+
+      updateTicketTabs(record);
+      renderTicketQr(showEmp);
 
       document.getElementById('ticketSection').classList.remove('hidden');
       window.scrollTo({
@@ -749,7 +762,6 @@
       }
     });
 
-    resetFlagsUI();
     initEmpIds();
   </script>
 </body>
