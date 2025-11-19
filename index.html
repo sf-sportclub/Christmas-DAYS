@@ -268,9 +268,9 @@
 
   <div class="card">
     <div style="margin-bottom: 10px; font-size: 0.85rem; color:#4b5563;">
-      ระบบจะโหลดรหัสพนักงานจากคอลัมน์ A ทั้งหมดให้เลือกในช่องด้านล่าง
-      เมื่อพิมพ์หรือเลือก “รหัสที่มีอยู่” ข้อมูลชื่อ–นามสกุล / ฝ่าย / เลขสุ่ม / GAME / ICE CREAM จะเด้งขึ้นมาอัตโนมัติ
-      ถ้ารหัสไม่อยู่ในระบบ เมื่อบันทึกจะสร้างแถวใหม่ให้
+     พิมพ์รหัสพนักงานในช่องด้านล่าง
+– ถ้ามีรหัสนี้ในระบบแล้ว ระบบจะแสดงชื่อ–นามสกุล, ฝ่าย,
+– ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ
     </div>
 
     <label for="empId">รหัสพนักงาน</label>
@@ -379,10 +379,11 @@
 
   <script>
     // 🔗 เปลี่ยนตรงนี้เป็น URL Web App ของพี่
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxwapj50dTmbyjvgNWVbYXoI0sGajEUN9WsmULjbLujD9_VjwgybRWUtUOp1ZKNWkYC/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxRTc4Ra2v4UFOfr-ZvrDxUvQMVBvBcWj9J5QZlHAtbpGNYSPbn7x3EeJdtg0QZ41wT/exec';
 
     var empMap = {}; // key = empId
 
+    // --- เรียก API (.gs) ---
     async function apiGetEmployees() {
       const res = await fetch(API_URL + '?action=getEmployees');
       const json = await res.json();
@@ -390,17 +391,26 @@
       return (json.result && json.result.employees) || [];
     }
 
-    async function apiPost(action, payload) {
+    async function apiGetLucky(empId) {
+      const url = API_URL + '?action=getLuckyNumber&empId=' + encodeURIComponent(empId);
+      const res = await fetch(url);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    async function apiSaveEmployee(payload) {
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: action, payload: payload || {} })
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'saveEmployee', payload: payload || {} })
       });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'API error');
       return json.result;
     }
 
+    // --- UI Helpers ---
     function setMsg(id, text, type) {
       var el = document.getElementById(id);
       el.textContent = text || '';
@@ -543,7 +553,7 @@
       setLoading('loadingLucky', true);
 
       try {
-        const res = await apiPost('getLuckyNumber', { empId: empId });
+        const res = await apiGetLucky(empId);
         if (!res) {
           setMsg('msgLucky', 'ไม่สามารถสุ่มเลขได้ กรุณาลองใหม่อีกครั้ง', 'error');
           return;
@@ -597,7 +607,7 @@
       };
 
       try {
-        const res = await apiPost('saveEmployee', payload); // {success, record}
+        const res = await apiSaveEmployee(payload); // {success, record}
         if (!res || !res.success) {
           setMsg('msgSave', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
           return;
@@ -641,6 +651,7 @@
       }
     }
 
+    // event: เวลาพิมพ์รหัสให้เช็คทันที
     document.getElementById('empId').addEventListener('input', handleEmpIdInput);
     document.getElementById('empId').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -649,8 +660,9 @@
       }
     });
 
+    // init ตอนโหลดหน้า
     resetFlagsUI();
-    initEmpIds(); // ดึงรหัสจาก .gs ทันทีตอนโหลดหน้า
+    initEmpIds();
   </script>
 </body>
 </html>
